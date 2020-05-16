@@ -1,19 +1,21 @@
+const path = require('path');
+
 const express = require('express');
 const bodyParser = require('body-parser');
-const port = process.env.port || 8080;
-const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const path = require('path');
+
+const feedRoutes = require('./routes/feed');
+const authRoutes = require('./routes/auth');
+
 const app = express();
 
-//for handling file uploads
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'images');
     },
     filename: (req, file, cb) => {
-        cb(null, new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname);
+        cb(null, new Date().toISOString() + '-' + file.originalname);
     }
 });
 
@@ -29,48 +31,39 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-
-//body parser
-app.use(bodyParser.json());
-//file upload config
+// app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
+app.use(bodyParser.json()); // application/json
 app.use(
     multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
 );
 app.use('/images', express.static(path.join(__dirname, 'images')));
-//cors middleware
-app.use(cors())
-//setting headers
+
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.setHeader('Access-Control-Allow-Header', 'Content-Type, Authorization');
+    res.setHeader(
+        'Access-Control-Allow-Methods',
+        'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+    );
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
-})
-
-// routes
-const authRoutes = require('./routes/auth');
-const feedRoutes = require('./routes/feed');
-
-app.get('/', (req, res) => res.json({ 'msg': 'Hello World!' }))
+});
 
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
 
-//error handling middleware
 app.use((error, req, res, next) => {
     console.log(error);
-    const status = error.statusCode;
+    const status = error.statusCode || 500;
     const message = error.message;
     const data = error.data;
-    res.status(status).json({ message: message, data: data, statusCode: status });
+    res.status(status).json({ message: message, data: data });
 });
 
 mongoose
-    .connect('mongodb://localhost:27017/messages?readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false', {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    })
+    .connect(
+        'mongodb://localhost:27017/messsages?readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false'
+    )
     .then(result => {
-        app.listen(port, () => console.log(`app listening on port ${port}!`))
+        app.listen(8080);
     })
-    .catch(err => { console.log(err) })
+    .catch(err => console.log(err));
