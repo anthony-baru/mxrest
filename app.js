@@ -48,17 +48,21 @@ app.use((req, res, next) => {
 })
 
 // routes
+const authRoutes = require('./routes/auth');
 const feedRoutes = require('./routes/feed');
+
 app.get('/', (req, res) => res.json({ 'msg': 'Hello World!' }))
 
 app.use('/feed', feedRoutes);
+app.use('/auth', authRoutes);
 
 //error handling middleware
 app.use((error, req, res, next) => {
     console.log(error);
     const status = error.statusCode;
     const message = error.message;
-    res.status(status).json({ message: message, statusCode: status });
+    const data = error.data;
+    res.status(status).json({ message: message, data: data, statusCode: status });
 });
 
 mongoose
