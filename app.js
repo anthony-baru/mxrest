@@ -60,9 +60,9 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-    .connect(
-        'mongodb://localhost:27017/messsages?readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false'
-    )
+    .connect('mongodb://localhost:27017/messages?readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false', {
+        useUnifiedTopology: true, useNewUrlParser: true
+    })
     .then(result => {
         app.listen(8080);
     })
