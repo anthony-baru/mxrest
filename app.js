@@ -8,6 +8,7 @@ const multer = require('multer');
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
 
+const cors = require('cors');
 const app = express();
 
 const fileStorage = multer.diskStorage({
@@ -15,7 +16,7 @@ const fileStorage = multer.diskStorage({
         cb(null, 'images');
     },
     filename: (req, file, cb) => {
-        cb(null, new Date().toISOString() + '-' + file.originalname);
+        cb(null, new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname);
     }
 });
 
@@ -31,6 +32,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+app.use(cors());
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 app.use(
